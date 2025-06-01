@@ -5,9 +5,9 @@ const toast = useToast()
 
 // Create axios instance
 const api = axios.create({
-  baseURL: import.meta.env.DEV
+  baseURL: import.meta.env?.DEV
     ? 'http://localhost:8000/api'
-    : import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+    : import.meta.env?.VITE_API_URL || 'https://api.texts.com.br',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
