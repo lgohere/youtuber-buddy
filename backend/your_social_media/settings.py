@@ -16,16 +16,20 @@ env = environ.Env(
     DOMAIN_NAME=(str, 'localhost')
 )
 
-# In production (Coolify), prioritize system environment variables
-# Only read .env files in development when system vars are not available
-if not os.environ.get('DJANGO_SETTINGS_MODULE'):
-    # Development mode - try to read .env files
-    env_file_path = os.path.join(BASE_DIR.parent.parent, '.env')
-    if os.path.exists(env_file_path):
-        environ.Env.read_env(env_file_path)
+# Read .env file only if DEBUG is True and DJANGO_SETTINGS_MODULE is not set (typical for local dev)
+if env('DEBUG') and not os.environ.get('DJANGO_SETTINGS_MODULE'):
+    env_file_path_root = os.path.join(BASE_DIR.parent.parent, '.env')
+    env_file_path_backend = os.path.join(BASE_DIR.parent, '.env')
+    if os.path.exists(env_file_path_root):
+        environ.Env.read_env(env_file_path_root)
+        logger.info("Loaded .env file from project root for local development.")
+    elif os.path.exists(env_file_path_backend):
+        environ.Env.read_env(env_file_path_backend)
+        logger.info("Loaded .env file from backend directory for local development.")
     else:
-        environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
-# In production, system environment variables (from Coolify) take precedence
+        logger.info("No .env file found for local development, relying on system env vars or defaults.")
+else:
+    logger.info("Running in production or DJANGO_SETTINGS_MODULE is set, .env files will not be loaded by settings.py. Coolify variables should be used.")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -289,16 +293,23 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# AI APIs Configuration - Use os.environ directly to ensure Coolify vars are read
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', env('GROQ_API_KEY', default=''))
-GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', env('GOOGLE_API_KEY', default=''))
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', env('OPENAI_API_KEY', default=''))
+# AI APIs Configuration
+if DEBUG:
+    # In DEBUG mode, allow reading from .env via django-environ for local development
+    GROQ_API_KEY = env('GROQ_API_KEY', default='')
+    GOOGLE_API_KEY = env('GOOGLE_API_KEY', default='')
+    OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+else:
+    # In PRODUCTION (DEBUG=False), strictly use os.environ to ensure Coolify variables are used
+    GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', '')
+    OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 # Debug: Log API key status (without exposing the actual keys)
-logger = logging.getLogger(__name__)
-logger.info(f"GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} (length: {len(GROQ_API_KEY) if GROQ_API_KEY else 0})")
-logger.info(f"GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
-logger.info(f"OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
+logger = logging.getLogger(__name__) # Make sure logger is defined or get it again
+logger.info(f"[SETTINGS] GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} (length: {len(GROQ_API_KEY) if GROQ_API_KEY else 0})")
+logger.info(f"[SETTINGS] GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
+logger.info(f"[SETTINGS] OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
 
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
