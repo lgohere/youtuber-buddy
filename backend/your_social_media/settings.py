@@ -35,7 +35,7 @@ DOMAIN_NAME = env('DOMAIN_NAME')
 if DEBUG:
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'backend', DOMAIN_NAME]
 else:
-    ALLOWED_HOSTS = [DOMAIN_NAME, f'www.{DOMAIN_NAME}']
+    ALLOWED_HOSTS = [DOMAIN_NAME, f'www.{DOMAIN_NAME}', 'api.texts.com.br', 'yt.texts.com.br']
 
 # Add hosts from environment variable if any, for flexibility
 ALLOWED_HOSTS.extend(env.list('ALLOWED_HOSTS_EXTRA', default=[]))
@@ -205,6 +205,8 @@ else:
     CORS_ALLOWED_ORIGINS = [
         f"https://{DOMAIN_NAME}",
         f"https://www.{DOMAIN_NAME}",
+        "https://yt.texts.com.br",  # Frontend domain
+        "https://api.texts.com.br",  # API domain
     ]
 
 CORS_ALLOWED_ORIGINS.extend(env.list('CORS_ALLOWED_ORIGINS_EXTRA', default=[]))
@@ -225,6 +227,8 @@ else:
     CSRF_TRUSTED_ORIGINS = [
         f"https://{DOMAIN_NAME}",
         f"https://www.{DOMAIN_NAME}",
+        "https://yt.texts.com.br",  # Frontend domain
+        "https://api.texts.com.br",  # API domain
     ]
 
 CSRF_TRUSTED_ORIGINS.extend(env.list('CSRF_TRUSTED_ORIGINS_EXTRA', default=[]))
