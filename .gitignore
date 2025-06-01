@@ -347,7 +347,8 @@ Temporary Items
 # Application specific
 database/
 temp/
-*.txt
+# Note: requirements.txt files should NOT be ignored - they are needed for deployment
+# *.txt  # REMOVED - this was ignoring requirements.txt files
 *.mp3
 *.mp4
 *.wav
