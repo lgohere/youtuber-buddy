@@ -83,8 +83,7 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-http://localhost/api} # Default for when Coolify proxy path is /api
     container_name: yourmedia-frontend
-    ports:
-      - "${PORT:-80}:80" # Coolify will handle the host port mapping
+    # ports: # Removed - Coolify manages port mapping automatically
     volumes:
       - static_files:/usr/share/nginx/html/static # Nginx serves Django's collected static files
       - media_files:/usr/share/nginx/html/media   # Nginx serves Django's media files
