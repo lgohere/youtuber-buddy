@@ -5,6 +5,7 @@ Django settings for your_social_media project.
 import os
 import environ
 from pathlib import Path
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,12 +16,16 @@ env = environ.Env(
     DOMAIN_NAME=(str, 'localhost')
 )
 
-# Take environment variables from .env file
-env_file_path = os.path.join(BASE_DIR.parent.parent, '.env')
-if os.path.exists(env_file_path):
-    environ.Env.read_env(env_file_path)
-else:
-    environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
+# In production (Coolify), prioritize system environment variables
+# Only read .env files in development when system vars are not available
+if not os.environ.get('DJANGO_SETTINGS_MODULE'):
+    # Development mode - try to read .env files
+    env_file_path = os.path.join(BASE_DIR.parent.parent, '.env')
+    if os.path.exists(env_file_path):
+        environ.Env.read_env(env_file_path)
+    else:
+        environ.Env.read_env(os.path.join(BASE_DIR.parent, '.env'))
+# In production, system environment variables (from Coolify) take precedence
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
@@ -284,10 +289,16 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
 
-# AI APIs Configuration
-GROQ_API_KEY = env('GROQ_API_KEY', default='')
-GOOGLE_API_KEY = env('GOOGLE_API_KEY', default='')
-OPENAI_API_KEY = env('OPENAI_API_KEY', default='')
+# AI APIs Configuration - Use os.environ directly to ensure Coolify vars are read
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', env('GROQ_API_KEY', default=''))
+GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY', env('GOOGLE_API_KEY', default=''))
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', env('OPENAI_API_KEY', default=''))
+
+# Debug: Log API key status (without exposing the actual keys)
+logger = logging.getLogger(__name__)
+logger.info(f"GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} (length: {len(GROQ_API_KEY) if GROQ_API_KEY else 0})")
+logger.info(f"GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
+logger.info(f"OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
 
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
