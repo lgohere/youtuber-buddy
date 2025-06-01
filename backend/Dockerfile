@@ -20,14 +20,14 @@ RUN apt-get update && apt-get install -y \
 # Criar diretório de trabalho
 WORKDIR /app
 
-# Copiar arquivos de dependências
-COPY requirements.txt .
+# Copiar arquivos de dependências (do contexto raiz)
+COPY backend/requirements.txt .
 
 # Instalar dependências Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar código da aplicação
-COPY . .
+# Copiar código da aplicação (do contexto raiz)
+COPY backend/ .
 
 # Criar diretórios necessários
 RUN mkdir -p media logs staticfiles
@@ -38,8 +38,8 @@ RUN python manage.py collectstatic --noinput || true
 # Expor porta
 EXPOSE 8000
 
-# Script de inicialização
-COPY docker-entrypoint.sh /docker-entrypoint.sh
+# Script de inicialização (do contexto raiz)
+COPY backend/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Comando padrão
