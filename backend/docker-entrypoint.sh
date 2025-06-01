@@ -22,6 +22,10 @@ python manage.py migrate --noinput
 echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
+# Test environment variables
+echo "Testing environment variables..."
+python manage.py test_env_vars
+
 # Verificar se é worker do Celery
 if [ "$1" = "celery" ]; then
     echo "Starting Celery worker..."

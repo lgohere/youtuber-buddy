@@ -8,6 +8,7 @@ from apps.content_generation.models import ContentGeneration
 import redis
 import requests
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -82,43 +83,49 @@ class Command(BaseCommand):
             self.stdout.write('💡 Inicie Redis: brew services start redis')
 
     def check_api_keys(self):
-        self.stdout.write('')
-        self.stdout.write(self.style.WARNING('🔑 STATUS DAS API KEYS'))
-        self.stdout.write('-' * 25)
+        """Check API keys configuration"""
+        self.stdout.write(self.style.HTTP_INFO('\n=== API KEYS STATUS ==='))
         
-        # GROQ API
-        if settings.GROQ_API_KEY:
-            self.stdout.write(self.style.SUCCESS('✅ GROQ API Key: Configurada'))
-            # Test GROQ connection
+        # Check environment variables directly
+        groq_env = os.environ.get('GROQ_API_KEY', '')
+        google_env = os.environ.get('GOOGLE_API_KEY', '')
+        openai_env = os.environ.get('OPENAI_API_KEY', '')
+        
+        self.stdout.write(f"GROQ_API_KEY from os.environ: {'✅ SET' if groq_env else '❌ NOT SET'} (length: {len(groq_env)})")
+        self.stdout.write(f"GOOGLE_API_KEY from os.environ: {'✅ SET' if google_env else '❌ NOT SET'} (length: {len(google_env)})")
+        self.stdout.write(f"OPENAI_API_KEY from os.environ: {'✅ SET' if openai_env else '❌ NOT SET'} (length: {len(openai_env)})")
+        
+        # Check Django settings
+        groq_settings = getattr(settings, 'GROQ_API_KEY', '')
+        google_settings = getattr(settings, 'GOOGLE_API_KEY', '')
+        openai_settings = getattr(settings, 'OPENAI_API_KEY', '')
+        
+        self.stdout.write(f"GROQ_API_KEY from settings: {'✅ SET' if groq_settings else '❌ NOT SET'} (length: {len(groq_settings)})")
+        self.stdout.write(f"GOOGLE_API_KEY from settings: {'✅ SET' if google_settings else '❌ NOT SET'} (length: {len(google_settings)})")
+        self.stdout.write(f"OPENAI_API_KEY from settings: {'✅ SET' if openai_settings else '❌ NOT SET'} (length: {len(openai_settings)})")
+        
+        # Test Groq API if key is available
+        if groq_settings:
+            self.stdout.write('\n--- Testing Groq API ---')
             try:
-                headers = {"Authorization": f"Bearer {settings.GROQ_API_KEY}"}
-                response = requests.get(
-                    "https://api.groq.com/openai/v1/models", 
-                    headers=headers, 
-                    timeout=5
-                )
+                import requests
+                headers = {'Authorization': f'Bearer {groq_settings}'}
+                response = requests.get('https://api.groq.com/openai/v1/models', headers=headers, timeout=10)
                 if response.status_code == 200:
-                    self.stdout.write('🌐 GROQ API: Conectada')
+                    self.stdout.write(self.style.SUCCESS('✅ Groq API: Working'))
                 else:
-                    self.stdout.write(self.style.WARNING('⚠️  GROQ API: Erro de conexão'))
+                    self.stdout.write(self.style.ERROR(f'❌ Groq API: Error {response.status_code} - {response.text}'))
             except Exception as e:
-                self.stdout.write(self.style.WARNING(f'⚠️  GROQ API: {e}'))
+                self.stdout.write(self.style.ERROR(f'❌ Groq API: Exception - {str(e)}'))
         else:
-            self.stdout.write(self.style.ERROR('❌ GROQ API Key: Não configurada'))
-
-        # Google API
-        if settings.GOOGLE_API_KEY:
-            self.stdout.write(self.style.SUCCESS('✅ Google API Key: Configurada'))
-            # Test Google connection
-            try:
-                import google.generativeai as genai
-                genai.configure(api_key=settings.GOOGLE_API_KEY)
-                model = genai.GenerativeModel('gemini-2.0-flash')
-                self.stdout.write('🌐 Google AI: Conectada')
-            except Exception as e:
-                self.stdout.write(self.style.WARNING(f'⚠️  Google AI: {e}'))
-        else:
-            self.stdout.write(self.style.ERROR('❌ Google API Key: Não configurada'))
+            self.stdout.write(self.style.ERROR('❌ Groq API: No key available for testing'))
+        
+        # Show all environment variables starting with API or KEY (for debug)
+        self.stdout.write('\n--- All API/KEY Environment Variables ---')
+        for key, value in os.environ.items():
+            if 'API' in key.upper() or 'KEY' in key.upper():
+                masked_value = f"{value[:8]}...{value[-4:]}" if len(value) > 12 else "***"
+                self.stdout.write(f"{key}: {masked_value} (length: {len(value)})")
 
     def check_transcription_stats(self):
         self.stdout.write('')
