@@ -32,7 +32,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-yourmediauser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db # Service name from this compose file
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_PORT: 5432 # Force standard PostgreSQL port
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0} # Service name from this compose file
       GROQ_API_KEY: ${GROQ_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
@@ -61,7 +61,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-yourmediauser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST: db
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_PORT: 5432 # Force standard PostgreSQL port
       REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
       GROQ_API_KEY: ${GROQ_API_KEY}
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
