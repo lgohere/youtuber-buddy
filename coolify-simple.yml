@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    image: lgohere/youtube-buddy:latest
+    ports:
+      - "8501:8501"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    volumes:
+      - ./data:/app/database
+    restart: unless-stopped 

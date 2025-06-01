@@ -1,8 +1,0 @@
-[server]
-maxUploadSize = 1000  # Aumenta para 1000 MB (1GB)
-
-[theme]
-primaryColor="#FF4B4B"
-backgroundColor="#0E1117"
-secondaryBackgroundColor="#262730"
-textColor="#FAFAFA" 
