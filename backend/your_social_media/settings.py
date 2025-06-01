@@ -7,6 +7,9 @@ import environ
 from pathlib import Path
 import logging
 
+# Instantiate logger early to be available throughout the file
+logger = logging.getLogger(__name__)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,25 +20,34 @@ env = environ.Env(
 )
 
 # Read .env file only if DEBUG is True and DJANGO_SETTINGS_MODULE is not set (typical for local dev)
-if env('DEBUG') and not os.environ.get('DJANGO_SETTINGS_MODULE'):
+# Corrected DEBUG check using env('DEBUG') as it might not be set in os.environ yet
+IS_DEBUG_MODE = env('DEBUG') # Read DEBUG status early
+
+if IS_DEBUG_MODE and not os.environ.get('DJANGO_SETTINGS_MODULE'):
     env_file_path_root = os.path.join(BASE_DIR.parent.parent, '.env')
     env_file_path_backend = os.path.join(BASE_DIR.parent, '.env')
     if os.path.exists(env_file_path_root):
+        logger.info(f"Attempting to load .env file from project root: {env_file_path_root}")
         environ.Env.read_env(env_file_path_root)
         logger.info("Loaded .env file from project root for local development.")
     elif os.path.exists(env_file_path_backend):
+        logger.info(f"Attempting to load .env file from backend directory: {env_file_path_backend}")
         environ.Env.read_env(env_file_path_backend)
         logger.info("Loaded .env file from backend directory for local development.")
     else:
         logger.info("No .env file found for local development, relying on system env vars or defaults.")
 else:
-    logger.info("Running in production or DJANGO_SETTINGS_MODULE is set, .env files will not be loaded by settings.py. Coolify variables should be used.")
+    if not IS_DEBUG_MODE:
+        logger.info("Running in PRODUCTION (DEBUG=False). .env files will not be loaded by settings.py. Coolify variables should be used.")
+    if os.environ.get('DJANGO_SETTINGS_MODULE'):
+        logger.info(f"DJANGO_SETTINGS_MODULE ({os.environ.get('DJANGO_SETTINGS_MODULE')}) is set. .env files will not be loaded by settings.py. Coolify variables should be used.")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-change-me-in-production')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+# DEBUG is already read into IS_DEBUG_MODE, use that or read again if needed
+DEBUG = IS_DEBUG_MODE # or DEBUG = env('DEBUG') if you prefer to read it again here
 
 # Domain Name
 DOMAIN_NAME = env('DOMAIN_NAME')
@@ -306,7 +318,6 @@ else:
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
 # Debug: Log API key status (without exposing the actual keys)
-logger = logging.getLogger(__name__) # Make sure logger is defined or get it again
 logger.info(f"[SETTINGS] GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} (length: {len(GROQ_API_KEY) if GROQ_API_KEY else 0})")
 logger.info(f"[SETTINGS] GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
 logger.info(f"[SETTINGS] OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
