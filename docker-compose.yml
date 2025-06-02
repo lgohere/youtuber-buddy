@@ -38,6 +38,13 @@ services:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       DOMAIN_NAME: ${DOMAIN_NAME:-localhost}
+      # Configurações específicas do Coolify para uploads ilimitados
+      NGINX_CLIENT_MAX_BODY_SIZE: "0"
+      NGINX_PROXY_READ_TIMEOUT: "3600"
+      NGINX_PROXY_CONNECT_TIMEOUT: "3600"
+      NGINX_PROXY_SEND_TIMEOUT: "3600"
+      NGINX_CLIENT_BODY_TIMEOUT: "3600"
+      NGINX_CLIENT_HEADER_TIMEOUT: "3600"
       # ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS, CSRF_TRUSTED_ORIGINS will be managed by settings.py based on DOMAIN_NAME and DEBUG
     volumes:
       - media_files:/app/media
@@ -46,6 +53,15 @@ services:
       - db
       - redis
     restart: always
+    # Labels específicos para o Coolify configurar o proxy nginx
+    labels:
+      - "coolify.proxy.nginx.client_max_body_size=0"
+      - "coolify.proxy.nginx.proxy_read_timeout=3600s"
+      - "coolify.proxy.nginx.proxy_connect_timeout=3600s"
+      - "coolify.proxy.nginx.proxy_send_timeout=3600s"
+      - "coolify.proxy.nginx.client_body_timeout=3600s"
+      - "coolify.proxy.nginx.client_header_timeout=3600s"
+      - "coolify.proxy.nginx.proxy_request_buffering=off"
 
   celery:
     build:
@@ -90,9 +106,19 @@ services:
     depends_on:
       - backend
     restart: always
+    # Labels específicos para o Coolify configurar o proxy nginx do frontend
+    labels:
+      - "coolify.proxy.nginx.client_max_body_size=0"
+      - "coolify.proxy.nginx.proxy_read_timeout=3600s"
+      - "coolify.proxy.nginx.proxy_connect_timeout=3600s"
+      - "coolify.proxy.nginx.proxy_send_timeout=3600s"
 
 volumes:
   postgres_data: {} # Using {} for default driver, same as null
   # redis_data: {} # Uncomment if you add redis persistence
   media_files: {}
-  static_files: {} 
+  static_files: {}
+
+networks:
+  app-network:
+    driver: bridge 

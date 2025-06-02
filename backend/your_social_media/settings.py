@@ -208,7 +208,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Settings
+# CORS Settings - Enhanced for mobile compatibility
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
         f"http://{DOMAIN_NAME}",
@@ -217,11 +217,11 @@ if DEBUG:
         f"http://127.0.0.1:3000",
         f"http://localhost:8080",
         f"http://127.0.0.1:8080",
+        f"http://localhost:5173",  # Vite dev server
+        f"http://127.0.0.1:5173",  # Vite dev server
     ]
-    if env('CORS_ALLOW_ALL_ORIGINS_DEV', default=False):
-        CORS_ALLOW_ALL_ORIGINS = True
-    else:
-        CORS_ALLOW_ALL_ORIGINS = False
+    # Allow all origins in development for mobile testing
+    CORS_ALLOW_ALL_ORIGINS = env('CORS_ALLOW_ALL_ORIGINS_DEV', default=True)
 else:
     CORS_ALLOWED_ORIGINS = [
         f"https://{DOMAIN_NAME}",
@@ -229,6 +229,8 @@ else:
         "https://yt.texts.com.br",  # Frontend domain
         "https://api.texts.com.br",  # API domain
     ]
+    # Allow all origins in production for mobile compatibility
+    CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS.extend(env.list('CORS_ALLOWED_ORIGINS_EXTRA', default=[]))
 
@@ -243,6 +245,8 @@ if DEBUG:
         f"http://127.0.0.1:3000",
         f"http://localhost:8080",
         f"http://127.0.0.1:8080",
+        f"http://localhost:5173",  # Vite dev server
+        f"http://127.0.0.1:5173",  # Vite dev server
     ]
 else:
     CSRF_TRUSTED_ORIGINS = [
@@ -254,24 +258,34 @@ else:
 
 CSRF_TRUSTED_ORIGINS.extend(env.list('CSRF_TRUSTED_ORIGINS_EXTRA', default=[]))
 
-# CORS_ALLOWED_ORIGIN_REGEXES: Remove or refine for production
+# Enhanced CORS settings for mobile devices
 CORS_ALLOWED_ORIGIN_REGEXES = []
 if DEBUG:
     CORS_ALLOWED_ORIGIN_REGEXES.extend([
         r"^http://localhost:\d+$",
         r"^http://127\.0\.0\.1:\d+$",
+        r"^http://192\.168\.\d+\.\d+:\d+$",  # Local network for mobile testing
+        r"^http://10\.\d+\.\d+\.\d+:\d+$",   # Local network for mobile testing
     ])
 
+# Enhanced headers for mobile compatibility
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
+    'accept-language',
     'authorization',
     'content-type',
+    'content-length',
     'dnt',
     'origin',
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'x-forwarded-for',
+    'x-forwarded-proto',
+    'cache-control',
+    'pragma',
+    'range',
 ]
 
 CORS_ALLOW_METHODS = [
@@ -281,6 +295,13 @@ CORS_ALLOW_METHODS = [
     'PATCH',
     'POST',
     'PUT',
+]
+
+# Additional CORS settings for file uploads
+CORS_EXPOSE_HEADERS = [
+    'content-length',
+    'content-range',
+    'content-type',
 ]
 
 # API Documentation
@@ -322,18 +343,19 @@ logger.info(f"[SETTINGS] GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} 
 logger.info(f"[SETTINGS] GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
 logger.info(f"[SETTINGS] OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
 
-# File Upload Settings - No limits for large video files
-FILE_UPLOAD_MAX_MEMORY_SIZE = None  # No memory limit
-DATA_UPLOAD_MAX_MEMORY_SIZE = None  # No memory limit
+# File Upload Settings - UNLIMITED for mobile compatibility
+FILE_UPLOAD_MAX_MEMORY_SIZE = None  # Unlimited
+DATA_UPLOAD_MAX_MEMORY_SIZE = None  # Unlimited
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Increase field limit
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Additional upload settings for unlimited file sizes
+# Additional upload settings for large files and mobile devices
 DATA_UPLOAD_MAX_NUMBER_FILES = 100
 FILE_UPLOAD_TEMP_DIR = None  # Use system temp directory
 FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',  # Use temp files for all uploads
+    'django.core.files.uploadhandler.MemoryFileUploadHandler',
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
 ]
 
 # Logging
