@@ -90,4 +90,88 @@ def debug_env_vars(self):
         }
     }
     
+    return result
+
+@app.task(bind=True)
+def test_groq_api_in_celery(self):
+    """Test Groq API specifically within Celery worker context"""
+    import os
+    import requests
+    from django.conf import settings
+    from apps.transcriptions.services import TranscriptionService
+    
+    result = {
+        'worker_id': self.request.id,
+        'environment_check': {},
+        'service_check': {},
+        'api_test': {},
+        'format_check': {}
+    }
+    
+    # Test 1: Environment variables
+    groq_key_env = os.environ.get('GROQ_API_KEY')
+    groq_key_settings = getattr(settings, 'GROQ_API_KEY', None)
+    
+    result['environment_check'] = {
+        'env_var': '✅ SET' if groq_key_env else '❌ NOT SET',
+        'settings_var': '✅ SET' if groq_key_settings else '❌ NOT SET',
+        'env_length': len(groq_key_env) if groq_key_env else 0,
+        'settings_length': len(groq_key_settings) if groq_key_settings else 0
+    }
+    
+    # Test 2: TranscriptionService
+    try:
+        service = TranscriptionService()
+        if hasattr(service, 'groq_api_key') and service.groq_api_key:
+            result['service_check'] = {
+                'status': '✅ INITIALIZED',
+                'key_length': len(service.groq_api_key),
+                'key_preview': f"{service.groq_api_key[:8]}...{service.groq_api_key[-4:]}"
+            }
+        else:
+            result['service_check'] = {'status': '❌ NOT INITIALIZED'}
+    except Exception as e:
+        result['service_check'] = {'status': f'❌ ERROR: {str(e)}'}
+    
+    # Test 3: Direct API test
+    api_key = groq_key_env or groq_key_settings
+    if api_key:
+        try:
+            headers = {"Authorization": f"Bearer {api_key}"}
+            response = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers=headers,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                models = response.json()
+                result['api_test'] = {
+                    'status': '✅ SUCCESS',
+                    'models_count': len(models.get('data', [])),
+                    'first_model': models.get('data', [{}])[0].get('id', 'None') if models.get('data') else 'None'
+                }
+            else:
+                result['api_test'] = {
+                    'status': f'❌ FAILED',
+                    'status_code': response.status_code,
+                    'error': response.text[:200]
+                }
+        except Exception as e:
+            result['api_test'] = {'status': f'❌ EXCEPTION: {str(e)}'}
+    else:
+        result['api_test'] = {'status': '❌ NO API KEY'}
+    
+    # Test 4: Format check
+    if api_key:
+        result['format_check'] = {
+            'correct_prefix': api_key.startswith('gsk_'),
+            'correct_length': len(api_key) == 56,
+            'actual_length': len(api_key),
+            'prefix': api_key[:4] if len(api_key) >= 4 else api_key
+        }
+    else:
+        result['format_check'] = {'status': 'NO API KEY TO CHECK'}
+    
+    logger.info(f"Groq API test result: {result}")
     return result 
