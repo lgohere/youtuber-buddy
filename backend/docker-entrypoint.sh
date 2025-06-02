@@ -137,6 +137,8 @@ else
         --timeout 3600 \
         --max-requests 1000 \
         --max-requests-jitter 100 \
+        --limit-request-line 8192 \
+        --limit-request-field_size 16384 \
         --access-logfile - \
         --error-logfile -
 fi 
