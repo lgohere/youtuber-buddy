@@ -51,14 +51,14 @@
                   <!-- Supported Formats -->
                   <div class="formats-grid">
                     <div class="format-card">
-                      <div class="format-title">🎵 Áudio (até 500MB)</div>
+                      <div class="format-title">🎵 Áudio</div>
                       <div class="format-list">
                         <div>MP3, WAV, FLAC, AAC</div>
                         <div>OGG, M4A, AIFF, WMA</div>
                       </div>
                     </div>
                     <div class="format-card">
-                      <div class="format-title">🎬 Vídeo (até 1GB)</div>
+                      <div class="format-title">🎬 Vídeo</div>
                       <div class="format-list">
                         <div>MP4, AVI, MOV, MKV</div>
                         <div>WMV, FLV, WebM, 3GP</div>
@@ -270,14 +270,7 @@ export default {
         return
       }
 
-      // Validate file size
-      const maxSize = isVideoFile(file) ? 1024 * 1024 * 1024 : 500 * 1024 * 1024 // 1GB for video, 500MB for audio
-      if (file.size > maxSize) {
-        const maxSizeText = isVideoFile(file) ? '1GB' : '500MB'
-        toast.error(`Arquivo muito grande. Tamanho máximo: ${maxSizeText}`)
-        return
-      }
-
+      // No file size validation - accept any size
       selectedFile.value = file
       toast.success('Arquivo selecionado com sucesso!')
     }
@@ -327,6 +320,9 @@ export default {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
+          timeout: 0, // No timeout for large files
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
           onUploadProgress: (progressEvent) => {
             uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
           }
@@ -351,9 +347,9 @@ export default {
         let errorMessage = 'Erro no upload do arquivo'
         
         if (error.response?.status === 413) {
-          errorMessage = 'Arquivo muito grande. Tente um arquivo menor ou verifique sua conexão.'
+          errorMessage = 'Erro no servidor com arquivo grande. Aguarde e tente novamente.'
         } else if (error.response?.status === 408) {
-          errorMessage = 'Timeout no upload. Tente novamente com uma conexão mais estável.'
+          errorMessage = 'Timeout no upload. Arquivo muito grande ou conexão lenta. Tente novamente.'
         } else if (error.response?.status === 400) {
           errorMessage = error.response?.data?.error || error.response?.data?.message || 'Dados inválidos no upload'
         } else if (error.response?.status === 500) {

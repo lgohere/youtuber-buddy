@@ -322,16 +322,19 @@ logger.info(f"[SETTINGS] GROQ_API_KEY loaded: {'Yes' if GROQ_API_KEY else 'No'} 
 logger.info(f"[SETTINGS] GOOGLE_API_KEY loaded: {'Yes' if GOOGLE_API_KEY else 'No'} (length: {len(GOOGLE_API_KEY) if GOOGLE_API_KEY else 0})")
 logger.info(f"[SETTINGS] OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'No'} (length: {len(OPENAI_API_KEY) if OPENAI_API_KEY else 0})")
 
-# File Upload Settings
-FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
+# File Upload Settings - No limits for large video files
+FILE_UPLOAD_MAX_MEMORY_SIZE = None  # No memory limit
+DATA_UPLOAD_MAX_MEMORY_SIZE = None  # No memory limit
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Increase field limit
 FILE_UPLOAD_PERMISSIONS = 0o644
 FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
-# Additional upload settings for large files
+# Additional upload settings for unlimited file sizes
 DATA_UPLOAD_MAX_NUMBER_FILES = 100
 FILE_UPLOAD_TEMP_DIR = None  # Use system temp directory
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',  # Use temp files for all uploads
+]
 
 # Logging
 LOGGING = {

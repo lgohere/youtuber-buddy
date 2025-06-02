@@ -8,7 +8,9 @@ const api = axios.create({
   baseURL: import.meta.env?.DEV
     ? 'http://localhost:8000/api'
     : import.meta.env?.VITE_API_URL || 'https://api.texts.com.br/api',
-  timeout: 30000,
+  timeout: 0, // No timeout for large file uploads
+  maxContentLength: Infinity,
+  maxBodyLength: Infinity,
   headers: {
     'Content-Type': 'application/json',
   },
