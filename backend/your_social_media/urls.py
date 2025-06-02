@@ -28,6 +28,9 @@ urlpatterns = [
     path('api/health/', health_check, name='health_check'),
     path('api/transcriptions/', include('apps.transcriptions.urls')),
     path('api/content-generation/', include('apps.content_generation.urls')),
+    
+    # Alias for frontend compatibility
+    path('api/content/', include('apps.content_generation.urls')),
 ]
 
 # Serve media files in development
