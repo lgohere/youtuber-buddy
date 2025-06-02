@@ -130,15 +130,15 @@ else
     echo "Testing Celery environment..."
     python manage.py test_celery_env
     
-    echo "Starting Django server..."
+    echo "Starting Django server optimized for 2GB uploads..."
     exec gunicorn your_social_media.wsgi:application \
         --bind 0.0.0.0:8000 \
         --workers 2 \
-        --timeout 3600 \
+        --timeout 7200 \
         --max-requests 1000 \
         --max-requests-jitter 100 \
         --limit-request-line 8192 \
-        --limit-request-field_size 16384 \
+        --limit-request-field_size 32768 \
         --access-logfile - \
         --error-logfile -
 fi 
