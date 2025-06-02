@@ -541,7 +541,7 @@ export default {
           payload.use_markdown = useMarkdownChapters.value
         }
 
-        const response = await api.post('/content/create/', payload)
+        const response = await api.post('content/create/', payload)
         
         toast.success('Geração de conteúdo iniciada!')
         
@@ -552,7 +552,7 @@ export default {
         pollContentStatus(response.data.content_generation.id)
         
       } catch (error) {
-        toast.error('Erro ao iniciar geração de conteúdo')
+        toast.error('Erro ao gerar conteúdo. Por favor, tente novamente.')
         console.error(error)
       } finally {
         loading.value[contentType] = false
@@ -655,7 +655,7 @@ export default {
           payload.max_chapters = parseInt(completePackage.value.maxChapters)
         }
 
-        const response = await api.post('/content/create/', payload)
+        const response = await api.post('content/create/', payload)
         
         toast.success('Geração de pacote completo iniciada!')
         
@@ -666,7 +666,7 @@ export default {
         pollContentStatus(response.data.content_generation.id)
         
       } catch (error) {
-        toast.error('Erro ao iniciar geração de pacote completo')
+        toast.error('Erro ao gerar pacote completo')
         console.error(error)
       } finally {
         loading.value.complete = false

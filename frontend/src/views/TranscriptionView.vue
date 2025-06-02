@@ -213,7 +213,7 @@ const generateContent = async (contentType) => {
   try {
     generatingContent.value = true
     
-    const response = await api.post('/content/create/', {
+    const response = await api.post('content/create/', {
       transcription_id: transcription.value.id,
       content_type: contentType
     })
@@ -224,7 +224,7 @@ const generateContent = async (contentType) => {
     // Poll for completion
     const pollForCompletion = async () => {
       try {
-        const contentResponse = await api.get(`/content/${contentGenerationId}/`)
+        const contentResponse = await api.get(`content/${contentGenerationId}/`)
         const contentData = contentResponse.data
         
         if (contentData.status === 'completed') {
