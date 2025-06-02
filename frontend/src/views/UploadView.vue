@@ -217,6 +217,9 @@ export default {
     const router = useRouter()
     const toast = useToast()
 
+    // Set page title
+    document.title = 'Upload de Arquivo - Youtuber Buddy'
+
     // Reactive data
     const selectedFile = ref(null)
     const isDragOver = ref(false)
@@ -259,6 +262,9 @@ export default {
 
     const handleFileSelection = (file) => {
       // Validate file type
+      console.log('Selected file details:', file);
+      console.log('File type from mobile:', file.type);
+      console.log('File name from mobile:', file.name);
       if (!isValidFileType(file)) {
         toast.error('Formato de arquivo não suportado. Verifique os formatos aceitos.')
         return
@@ -338,7 +344,28 @@ export default {
         
       } catch (error) {
         console.error('Upload error:', error)
-        const errorMessage = error.response?.data?.error || 'Erro no upload do arquivo'
+        console.error('Error response:', error.response)
+        console.error('Error status:', error.response?.status)
+        console.error('Error data:', error.response?.data)
+        
+        let errorMessage = 'Erro no upload do arquivo'
+        
+        if (error.response?.status === 413) {
+          errorMessage = 'Arquivo muito grande. Tente um arquivo menor ou verifique sua conexão.'
+        } else if (error.response?.status === 408) {
+          errorMessage = 'Timeout no upload. Tente novamente com uma conexão mais estável.'
+        } else if (error.response?.status === 400) {
+          errorMessage = error.response?.data?.error || error.response?.data?.message || 'Dados inválidos no upload'
+        } else if (error.response?.status === 500) {
+          errorMessage = 'Erro interno do servidor. Tente novamente em alguns minutos.'
+        } else if (error.code === 'NETWORK_ERROR') {
+          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.'
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message
+        }
+        
         toast.error(errorMessage)
       } finally {
         isUploading.value = false

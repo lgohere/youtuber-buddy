@@ -325,6 +325,13 @@ logger.info(f"[SETTINGS] OPENAI_API_KEY loaded: {'Yes' if OPENAI_API_KEY else 'N
 # File Upload Settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 1024  # 1GB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Increase field limit
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# Additional upload settings for large files
+DATA_UPLOAD_MAX_NUMBER_FILES = 100
+FILE_UPLOAD_TEMP_DIR = None  # Use system temp directory
 
 # Logging
 LOGGING = {

@@ -441,6 +441,9 @@ export default {
   setup() {
     const toast = useToast()
     
+    // Set page title
+    document.title = 'Geração de Conteúdo IA - Youtuber Buddy'
+
     // State
     const availableTranscriptions = ref([])
     const selectedTranscription = ref(null)

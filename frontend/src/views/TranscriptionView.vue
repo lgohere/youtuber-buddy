@@ -155,6 +155,9 @@ import api from '@/services/api'
 const route = useRoute()
 const router = useRouter()
 
+// Set page title
+document.title = 'Detalhes da Transcrição - Youtuber Buddy'
+
 // Reactive data
 const loading = ref(true)
 const error = ref(null)
